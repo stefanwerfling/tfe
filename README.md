@@ -1,4 +1,4 @@
-# TFE
+# TFE - Tinkerforge Extended
 Tinkerforge API Bindings Extended in Typescript and ESM
 
 ## Info
