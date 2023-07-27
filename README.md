@@ -45,7 +45,15 @@ import {IPConnection} from 'tfe';
     ipcon.enumerate();
   });
 
-  ipcon.on(IPConnection.CALLBACK_ENUMERATE, (uid: string, connectedUid: any, position: number, hardwareVersion: number[], firmwareVersion: number[], deviceIdentifier: any, enumerationType: number) => {
+  ipcon.on(IPConnection.CALLBACK_ENUMERATE, (
+      uid: string, 
+      connectedUid: any, 
+      position: number, 
+      hardwareVersion: number[], 
+      firmwareVersion: number[], 
+      deviceIdentifier: any, 
+      enumerationType: number
+  ) => {
     console.log(`UID:               ${uid}`);
     console.log(`Enumeration Type:  ${enumerationType}`);
 
