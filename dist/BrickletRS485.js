@@ -759,6 +759,550 @@ export class BrickletRS485 extends Device {
         this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_MASTER_READ_COILS, [slaveAddress, startingAddress, count], 'B I H', 9, 'B', returnCallback, errorCallback, false, true);
     }
     /**
+     * modbusSlaveAnswerReadHoldingRegistersRequestLowLevel
+     * @param requestID
+     * @param holdingRegistersLength
+     * @param holdingRegistersChunkOffset
+     * @param holdingRegistersChunkData
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerReadHoldingRegistersRequestLowLevel(requestID, holdingRegistersLength, holdingRegistersChunkOffset, holdingRegistersChunkData, returnCallback, errorCallback) {
+        /**
+         * In Modbus slave mode this function can be used to answer a master request to
+         * read holding registers.
+         *
+         * * Request ID: Request ID of the corresponding request that is being answered.
+         * * Holding Registers: Data that is to be sent to the Modbus master for the corresponding request.
+         *
+         * This function must be called from the :cb:`Modbus Slave Read Holding Registers Request`
+         * callback with the Request ID as provided by the argument of the callback.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_SLAVE_ANSWER_READ_HOLDING_REGISTERS_REQUEST_LOW_LEVEL, [requestID, holdingRegistersLength, holdingRegistersChunkOffset, holdingRegistersChunkData], 'B H H H29', 0, '', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * modbusMasterReadHoldingRegisters
+     * @param slaveAddress
+     * @param startingAddress
+     * @param count
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusMasterReadHoldingRegisters(slaveAddress, startingAddress, count, returnCallback, errorCallback) {
+        /**
+         * In Modbus master mode this function can be used to read holding registers from a slave.
+         * This function creates a Modbus function code 3 request.
+         *
+         * * Slave Address: Address of the target Modbus slave.
+         * * Starting Address: Number of the first holding register to read. For backwards compatibility reasons this parameter is called Starting Address. It is not an address, but instead a holding register number in the range of 1 to 65536. The prefix digit 4 (for holding register) is implicit and must be omitted.
+         * * Count: Number of holding registers to read.
+         *
+         * Upon success the function will return a non-zero request ID which will represent
+         * the current request initiated by the Modbus master. In case of failure the returned
+         * request ID will be 0.
+         *
+         * When successful this function will also invoke the :cb:`Modbus Master Read Holding Registers Response`
+         * callback. In this callback the Request ID provided by the callback argument must be matched
+         * with the Request ID returned from this function to verify that the callback is indeed for a
+         * particular request.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_MASTER_READ_HOLDING_REGISTERS, [slaveAddress, startingAddress, count], 'B I H', 9, 'B', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * modbusSlaveAnswerWriteSingleCoilRequest
+     * @param requestID
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerWriteSingleCoilRequest(requestID, returnCallback, errorCallback) {
+        /**
+         * In Modbus slave mode this function can be used to answer a master request to
+         * write a single coil.
+         *
+         * * Request ID: Request ID of the corresponding request that is being answered.
+         *
+         * This function must be called from the :cb:`Modbus Slave Write Single Coil Request`
+         * callback with the Request ID as provided by the arguments of the callback.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_SLAVE_ANSWER_WRITE_SINGLE_COIL_REQUEST, [requestID], 'B', 0, '', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * modbusMasterWriteSingleCoil
+     * @param slaveAddress
+     * @param coilAddress
+     * @param coilValue
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusMasterWriteSingleCoil(slaveAddress, coilAddress, coilValue, returnCallback, errorCallback) {
+        /**
+         * In Modbus master mode this function can be used to write a single coil of a slave.
+         * This function creates a Modbus function code 5 request.
+         *
+         * * Slave Address: Address of the target Modbus slave.
+         * * Coil Address: Number of the coil to be written. For backwards compatibility reasons, this parameter is called Starting Address. It is not an address, but instead a coil number in the range of 1 to 65536.
+         * * Coil Value: Value to be written.
+         *
+         * Upon success the function will return a non-zero request ID which will represent
+         * the current request initiated by the Modbus master. In case of failure the returned
+         * request ID will be 0.
+         *
+         * When successful this function will also invoke the :cb:`Modbus Master Write Single Coil Response`
+         * callback. In this callback the Request ID provided by the callback argument must be matched
+         * with the Request ID returned from this function to verify that the callback is indeed for a
+         * particular request.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_MASTER_WRITE_SINGLE_COIL, [slaveAddress, coilAddress, coilValue], 'B I ?', 9, 'B', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * modbusSlaveAnswerWriteSingleRegisterRequest
+     * @param requestID
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerWriteSingleRegisterRequest(requestID, returnCallback, errorCallback) {
+        /**
+         * In Modbus slave mode this function can be used to answer a master request to
+         * write a single register.
+         *
+         * * Request ID: Request ID of the corresponding request that is being answered.
+         *
+         * This function must be called from the :cb:`Modbus Slave Write Single Register Request`
+         * callback with the Request ID, Register Address and Register Value as provided by
+         * the arguments of the callback.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_SLAVE_ANSWER_WRITE_SINGLE_REGISTER_REQUEST, [requestID], 'B', 0, '', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * modbusMasterWriteSingleRegister
+     * @param slaveAddress
+     * @param registerAddress
+     * @param registerValue
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusMasterWriteSingleRegister(slaveAddress, registerAddress, registerValue, returnCallback, errorCallback) {
+        /**
+         * In Modbus master mode this function can be used to write a single holding register of a
+         * slave. This function creates a Modbus function code 6 request.
+         *
+         * * Slave Address: Address of the target Modbus slave.
+         * * Register Address: Number of the holding register to be written. For backwards compatibility reasons, this parameter is called Starting Address. It is not an address, but instead a holding register number in the range of 1 to 65536. The prefix digit 4 (for holding register) is implicit and must be omitted.
+         * * Register Value: Value to be written.
+         *
+         * Upon success the function will return a non-zero request ID which will represent
+         * the current request initiated by the Modbus master. In case of failure the returned
+         * request ID will be 0.
+         *
+         * When successful this function will also invoke the :cb:`Modbus Master Write Single Register Response`
+         * callback. In this callback the Request ID provided by the callback argument must be matched
+         * with the Request ID returned from this function to verify that the callback is indeed for a
+         * particular request.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_MASTER_WRITE_SINGLE_REGISTER, [slaveAddress, registerAddress, registerValue], 'B I H', 9, 'B', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * modbusSlaveAnswerWriteMultipleCoilsRequest
+     * @param requestID
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerWriteMultipleCoilsRequest(requestID, returnCallback, errorCallback) {
+        /**
+         * In Modbus slave mode this function can be used to answer a master request to
+         * write multiple coils.
+         *
+         * * Request ID: Request ID of the corresponding request that is being answered.
+         *
+         * This function must be called from the :cb:`Modbus Slave Write Multiple Coils Request`
+         * callback with the Request ID of the callback.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_SLAVE_ANSWER_WRITE_MULTIPLE_COILS_REQUEST, [requestID], 'B', 0, '', returnCallback, errorCallback, false, true);
+    }
+    modbusMasterWriteMultipleCoilsLowLevel(slaveAddress, startingAddress, coilsLength, coilsChunkOffset, coilsChunkData, returnCallback, errorCallback) {
+        /**
+         * In Modbus master mode this function can be used to write multiple coils of a slave.
+         * This function creates a Modbus function code 15 request.
+         *
+         * * Slave Address: Address of the target Modbus slave.
+         * * Starting Address: Number of the first coil to write. For backwards compatibility reasons, this parameter is called Starting Address.It is not an address, but instead a coil number in the range of 1 to 65536.
+         *
+         * Upon success the function will return a non-zero request ID which will represent
+         * the current request initiated by the Modbus master. In case of failure the returned
+         * request ID will be 0.
+         *
+         * When successful this function will also invoke the :cb:`Modbus Master Write Multiple Coils Response`
+         * callback. In this callback the Request ID provided by the callback argument must be matched
+         * with the Request ID returned from this function to verify that the callback is indeed for a
+         * particular request.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_MASTER_WRITE_MULTIPLE_COILS_LOW_LEVEL, [slaveAddress, startingAddress, coilsLength, coilsChunkOffset, coilsChunkData], 'B I H H ?440', 9, 'B', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * modbusSlaveAnswerWriteMultipleRegistersRequest
+     * @param requestID
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerWriteMultipleRegistersRequest(requestID, returnCallback, errorCallback) {
+        /**
+         * In Modbus slave mode this function can be used to answer a master request to
+         * write multiple registers.
+         *
+         * * Request ID: Request ID of the corresponding request that is being answered.
+         *
+         * This function must be called from the :cb:`Modbus Slave Write Multiple Registers Request`
+         * callback with the Request ID of the callback.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_SLAVE_ANSWER_WRITE_MULTIPLE_REGISTERS_REQUEST, [requestID], 'B', 0, '', returnCallback, errorCallback, false, true);
+    }
+    modbusMasterWriteMultipleRegistersLowLevel(slaveAddress, startingAddress, registersLength, registersChunkOffset, registersChunkData, returnCallback, errorCallback) {
+        /**
+         * In Modbus master mode this function can be used to write multiple registers of a slave.
+         * This function creates a Modbus function code 16 request.
+         *
+         * * Slave Address: Address of the target Modbus slave.
+         * * Starting Address: Number of the first holding register to write. For backwards compatibility reasons, this parameter is called Starting Address. It is not an address, but instead a holding register number in the range of 1 to 65536. The prefix digit 4 (for holding register) is implicit and must be omitted.
+         *
+         * Upon success the function will return a non-zero request ID which will represent
+         * the current request initiated by the Modbus master. In case of failure the returned
+         * request ID will be 0.
+         *
+         * When successful this function will also invoke the :cb:`Modbus Master Write Multiple Registers Response`
+         * callback. In this callback the Request ID provided by the callback argument must be matched
+         * with the Request ID returned from this function to verify that the callback is indeed for a
+         * particular request.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_MASTER_WRITE_MULTIPLE_REGISTERS_LOW_LEVEL, [slaveAddress, startingAddress, registersLength, registersChunkOffset, registersChunkData], 'B I H H H27', 9, 'B', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * modbusSlaveAnswerReadDiscreteInputsRequestLowLevel
+     * @param requestID
+     * @param discreteInputsLength
+     * @param discreteInputsChunkOffset
+     * @param discreteInputsChunkData
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerReadDiscreteInputsRequestLowLevel(requestID, discreteInputsLength, discreteInputsChunkOffset, discreteInputsChunkData, returnCallback, errorCallback) {
+        /**
+         * In Modbus slave mode this function can be used to answer a master request to
+         * read discrete inputs.
+         *
+         * * Request ID: Request ID of the corresponding request that is being answered.
+         * * Discrete Inputs: Data that is to be sent to the Modbus master for the corresponding request.
+         *
+         * This function must be called from the :cb:`Modbus Slave Read Discrete Inputs Request`
+         * callback with the Request ID as provided by the argument of the callback.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_SLAVE_ANSWER_READ_DISCRETE_INPUTS_REQUEST_LOW_LEVEL, [requestID, discreteInputsLength, discreteInputsChunkOffset, discreteInputsChunkData], 'B H H ?472', 0, '', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * modbusMasterReadDiscreteInputs
+     * @param slaveAddress
+     * @param startingAddress
+     * @param count
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusMasterReadDiscreteInputs(slaveAddress, startingAddress, count, returnCallback, errorCallback) {
+        /**
+         * In Modbus master mode this function can be used to read discrete inputs from a slave.
+         * This function creates a Modbus function code 2 request.
+         *
+         * * Slave Address: Address of the target Modbus slave.
+         * * Starting Address: Number of the first discrete input to read. For backwards compatibility reasons, this parameter is called Starting Address. It is not an address, but instead a discrete input number in the range of 1 to 65536. The prefix digit 1 (for discrete input) is implicit and must be omitted.
+         * * Count: Number of discrete inputs to read.
+         *
+         * Upon success the function will return a non-zero request ID which will represent
+         * the current request initiated by the Modbus master. In case of failure the returned
+         * request ID will be 0.
+         *
+         * When successful this function will also invoke the :cb:`Modbus Master Read Discrete Inputs Response`
+         * callback. In this callback the Request ID provided by the callback argument must be matched
+         * with the Request ID returned from this function to verify that the callback is indeed for a
+         * particular request.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_MASTER_READ_DISCRETE_INPUTS, [slaveAddress, startingAddress, count], 'B I H', 9, 'B', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * modbusSlaveAnswerReadInputRegistersRequestLowLevel
+     * @param requestID
+     * @param inputRegistersLength
+     * @param inputRegistersChunkOffset
+     * @param inputRegistersChunkData
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerReadInputRegistersRequestLowLevel(requestID, inputRegistersLength, inputRegistersChunkOffset, inputRegistersChunkData, returnCallback, errorCallback) {
+        /**
+         * In Modbus slave mode this function can be used to answer a master request to
+         * read input registers.
+         *
+         * * Request ID: Request ID of the corresponding request that is being answered.
+         * * Input Registers: Data that is to be sent to the Modbus master for the corresponding request.
+         *
+         * This function must be called from the :cb:`Modbus Slave Read Input Registers Request` callback
+         * with the Request ID as provided by the argument of the callback.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_SLAVE_ANSWER_READ_INPUT_REGISTERS_REQUEST_LOW_LEVEL, [requestID, inputRegistersLength, inputRegistersChunkOffset, inputRegistersChunkData], 'B H H H29', 0, '', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * modbusMasterReadInputRegisters
+     * @param slaveAddress
+     * @param startingAddress
+     * @param count
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusMasterReadInputRegisters(slaveAddress, startingAddress, count, returnCallback, errorCallback) {
+        /**
+         * In Modbus master mode this function can be used to read input registers from a slave.
+         * This function creates a Modbus function code 4 request.
+         *
+         * * Slave Address: Address of the target Modbus slave.
+         * * Starting Address: Number of the first input register to read. For backwards compatibility reasons, this parameter is called Starting Address. It is not an address, but instead an input register number in the range of 1 to 65536. The prefix digit 3 (for input register) is implicit and must be omitted.
+         * * Count: Number of input registers to read.
+         *
+         * Upon success the function will return a non-zero request ID which will represent
+         * the current request initiated by the Modbus master. In case of failure the returned
+         * request ID will be 0.
+         *
+         * When successful this function will also invoke the :cb:`Modbus Master Read Input Registers Response`
+         * callback. In this callback the Request ID provided by the callback argument must be matched
+         * with the Request ID returned from this function to verify that the callback is indeed for a
+         * particular request.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_MASTER_READ_INPUT_REGISTERS, [slaveAddress, startingAddress, count], 'B I H', 9, 'B', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * setFrameReadableCallbackConfiguration
+     * @param frameSize
+     * @param returnCallback
+     * @param errorCallback
+     */
+    setFrameReadableCallbackConfiguration(frameSize, returnCallback, errorCallback) {
+        /**
+         * Configures the :cb:`Frame Readable` callback. The frame size is the number of bytes, that have to be readable to trigger the callback.
+         * A frame size of 0 disables the callback. A frame size greater than 0 enables the callback and disables the :cb:`Read` callback.
+         *
+         * By default the callback is disabled.
+         *
+         * .. versionadded:: 2.0.5$nbsp;(Plugin)
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_SET_FRAME_READABLE_CALLBACK_CONFIGURATION, [frameSize], 'H', 0, '', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * getFrameReadableCallbackConfiguration
+     * @param returnCallback
+     * @param errorCallback
+     */
+    getFrameReadableCallbackConfiguration(returnCallback, errorCallback) {
+        /**
+         * Returns the callback configuration as set by :func:`Set Frame Readable Callback Configuration`.
+         *
+         * .. versionadded:: 2.0.5$nbsp;(Plugin)
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_GET_FRAME_READABLE_CALLBACK_CONFIGURATION, [], '', 10, 'H', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * getSPITFPErrorCount
+     * @param returnCallback
+     * @param errorCallback
+     */
+    getSPITFPErrorCount(returnCallback, errorCallback) {
+        /**
+         * Returns the error count for the communication between Brick and Bricklet.
+         *
+         * The errors are divided into
+         *
+         * * ACK checksum errors,
+         * * message checksum errors,
+         * * framing errors and
+         * * overflow errors.
+         *
+         * The errors counts are for errors that occur on the Bricklet side. All
+         * Bricks have a similar function that returns the errors on the Brick side.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_GET_SPITFP_ERROR_COUNT, [], '', 24, 'I I I I', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * setBootloaderMode
+     * @param mode
+     * @param returnCallback
+     * @param errorCallback
+     */
+    setBootloaderMode(mode, returnCallback, errorCallback) {
+        /**
+         * Sets the bootloader mode and returns the status after the requested
+         * mode change was instigated.
+         *
+         * You can change from bootloader mode to firmware mode and vice versa. A change
+         * from bootloader mode to firmware mode will only take place if the entry function,
+         * device identifier and CRC are present and correct.
+         *
+         * This function is used by Brick Viewer during flashing. It should not be
+         * necessary to call it in a normal user program.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_SET_BOOTLOADER_MODE, [mode], 'B', 9, 'B', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * getBootloaderMode
+     * @param returnCallback
+     * @param errorCallback
+     */
+    getBootloaderMode(returnCallback, errorCallback) {
+        /**
+         * Returns the current bootloader mode, see :func:`Set Bootloader Mode`.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_GET_BOOTLOADER_MODE, [], '', 9, 'B', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * setWriteFirmwarePointer
+     * @param pointer
+     * @param returnCallback
+     * @param errorCallback
+     */
+    setWriteFirmwarePointer(pointer, returnCallback, errorCallback) {
+        /**
+         * Sets the firmware pointer for :func:`Write Firmware`. The pointer has
+         * to be increased by chunks of size 64. The data is written to flash
+         * every 4 chunks (which equals to one page of size 256).
+         *
+         * This function is used by Brick Viewer during flashing. It should not be
+         * necessary to call it in a normal user program.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_SET_WRITE_FIRMWARE_POINTER, [pointer], 'I', 0, '', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * writeFirmware
+     * @param data
+     * @param returnCallback
+     * @param errorCallback
+     */
+    writeFirmware(data, returnCallback, errorCallback) {
+        /**
+         * Writes 64 Bytes of firmware at the position as written by
+         * :func:`Set Write Firmware Pointer` before. The firmware is written
+         * to flash every 4 chunks.
+         *
+         * You can only write firmware in bootloader mode.
+         *
+         * This function is used by Brick Viewer during flashing. It should not be
+         * necessary to call it in a normal user program.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_WRITE_FIRMWARE, [data], 'B64', 9, 'B', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * setStatusLEDConfig
+     * @param config
+     * @param returnCallback
+     * @param errorCallback
+     */
+    setStatusLEDConfig(config, returnCallback, errorCallback) {
+        /**
+         * Sets the status LED configuration. By default the LED shows
+         * communication traffic between Brick and Bricklet, it flickers once
+         * for every 10 received data packets.
+         *
+         * You can also turn the LED permanently on/off or show a heartbeat.
+         *
+         * If the Bricklet is in bootloader mode, the LED is will show heartbeat by default.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_SET_STATUS_LED_CONFIG, [config], 'B', 0, '', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * getStatusLEDConfig
+     * @param returnCallback
+     * @param errorCallback
+     */
+    getStatusLEDConfig(returnCallback, errorCallback) {
+        /**
+         * Returns the configuration as set by :func:`Set Status LED Config`
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_GET_STATUS_LED_CONFIG, [], '', 9, 'B', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * getChipTemperature
+     * @param returnCallback
+     * @param errorCallback
+     */
+    getChipTemperature(returnCallback, errorCallback) {
+        /**
+         * Returns the temperature as measured inside the microcontroller. The
+         * value returned is not the ambient temperature!
+         *
+         * The temperature is only proportional to the real temperature and it has bad
+         * accuracy. Practically it is only useful as an indicator for
+         * temperature changes.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_GET_CHIP_TEMPERATURE, [], '', 10, 'h', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * reset
+     * @param returnCallback
+     * @param errorCallback
+     */
+    reset(returnCallback, errorCallback) {
+        /**
+         * Calling this function will reset the Bricklet. All configurations
+         * will be lost.
+         *
+         * After a reset you have to create new device objects,
+         * calling functions on the existing ones will result in
+         * undefined behavior!
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_RESET, [], '', 0, '', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * writeUID
+     * @param uid
+     * @param returnCallback
+     * @param errorCallback
+     */
+    writeUID(uid, returnCallback, errorCallback) {
+        /**
+         * Writes a new UID into flash. If you want to set a new UID
+         * you have to decode the Base58 encoded UID string into an
+         * integer first.
+         *
+         * We recommend that you use Brick Viewer to change the UID.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_WRITE_UID, [uid], 'I', 0, '', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * readUID
+     * @param returnCallback
+     * @param errorCallback
+     */
+    readUID(returnCallback, errorCallback) {
+        /**
+         * Returns the current UID as an integer. Encode as
+         * Base58 to get the usual string version.
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_READ_UID, [], '', 12, 'I', returnCallback, errorCallback, false, true);
+    }
+    /**
+     * getIdentity
+     * @param returnCallback
+     * @param errorCallback
+     */
+    getIdentity(returnCallback, errorCallback) {
+        /**
+         * Returns the UID, the UID where the Bricklet is connected to,
+         * the position, the hardware and firmware version as well as the
+         * device identifier.
+         *
+         * The position can be 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h' (Bricklet Port).
+         * A Bricklet connected to an :ref:`Isolator Bricklet <isolator_bricklet>` is always at
+         * position 'z'.
+         *
+         * The device identifier numbers can be found :ref:`here <device_identifier>`.
+         * |device_identifier_constant|
+         */
+        this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_GET_IDENTITY, [], '', 33, 's8 s8 c B3 B3 H', returnCallback, errorCallback, false, false);
+    }
+    /**
      * write
      * @param message
      * @param returnCallback

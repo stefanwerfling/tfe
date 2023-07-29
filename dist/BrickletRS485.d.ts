@@ -322,6 +322,201 @@ export declare class BrickletRS485 extends Device {
      */
     modbusMasterReadCoils(slaveAddress: number, startingAddress: number, count: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
     /**
+     * modbusSlaveAnswerReadHoldingRegistersRequestLowLevel
+     * @param requestID
+     * @param holdingRegistersLength
+     * @param holdingRegistersChunkOffset
+     * @param holdingRegistersChunkData
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerReadHoldingRegistersRequestLowLevel(requestID: number, holdingRegistersLength: number, holdingRegistersChunkOffset: number, holdingRegistersChunkData: any, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * modbusMasterReadHoldingRegisters
+     * @param slaveAddress
+     * @param startingAddress
+     * @param count
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusMasterReadHoldingRegisters(slaveAddress: number, startingAddress: number, count: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * modbusSlaveAnswerWriteSingleCoilRequest
+     * @param requestID
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerWriteSingleCoilRequest(requestID: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * modbusMasterWriteSingleCoil
+     * @param slaveAddress
+     * @param coilAddress
+     * @param coilValue
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusMasterWriteSingleCoil(slaveAddress: number, coilAddress: number, coilValue: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * modbusSlaveAnswerWriteSingleRegisterRequest
+     * @param requestID
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerWriteSingleRegisterRequest(requestID: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * modbusMasterWriteSingleRegister
+     * @param slaveAddress
+     * @param registerAddress
+     * @param registerValue
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusMasterWriteSingleRegister(slaveAddress: number, registerAddress: number, registerValue: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * modbusSlaveAnswerWriteMultipleCoilsRequest
+     * @param requestID
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerWriteMultipleCoilsRequest(requestID: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    modbusMasterWriteMultipleCoilsLowLevel(slaveAddress: number, startingAddress: number, coilsLength: number, coilsChunkOffset: number, coilsChunkData: any, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * modbusSlaveAnswerWriteMultipleRegistersRequest
+     * @param requestID
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerWriteMultipleRegistersRequest(requestID: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    modbusMasterWriteMultipleRegistersLowLevel(slaveAddress: number, startingAddress: number, registersLength: number, registersChunkOffset: number, registersChunkData: any, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * modbusSlaveAnswerReadDiscreteInputsRequestLowLevel
+     * @param requestID
+     * @param discreteInputsLength
+     * @param discreteInputsChunkOffset
+     * @param discreteInputsChunkData
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerReadDiscreteInputsRequestLowLevel(requestID: number, discreteInputsLength: number, discreteInputsChunkOffset: number, discreteInputsChunkData: any, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * modbusMasterReadDiscreteInputs
+     * @param slaveAddress
+     * @param startingAddress
+     * @param count
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusMasterReadDiscreteInputs(slaveAddress: number, startingAddress: number, count: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * modbusSlaveAnswerReadInputRegistersRequestLowLevel
+     * @param requestID
+     * @param inputRegistersLength
+     * @param inputRegistersChunkOffset
+     * @param inputRegistersChunkData
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerReadInputRegistersRequestLowLevel(requestID: number, inputRegistersLength: number, inputRegistersChunkOffset: number, inputRegistersChunkData: any, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * modbusMasterReadInputRegisters
+     * @param slaveAddress
+     * @param startingAddress
+     * @param count
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusMasterReadInputRegisters(slaveAddress: number, startingAddress: number, count: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * setFrameReadableCallbackConfiguration
+     * @param frameSize
+     * @param returnCallback
+     * @param errorCallback
+     */
+    setFrameReadableCallbackConfiguration(frameSize: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * getFrameReadableCallbackConfiguration
+     * @param returnCallback
+     * @param errorCallback
+     */
+    getFrameReadableCallbackConfiguration(returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * getSPITFPErrorCount
+     * @param returnCallback
+     * @param errorCallback
+     */
+    getSPITFPErrorCount(returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * setBootloaderMode
+     * @param mode
+     * @param returnCallback
+     * @param errorCallback
+     */
+    setBootloaderMode(mode: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * getBootloaderMode
+     * @param returnCallback
+     * @param errorCallback
+     */
+    getBootloaderMode(returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * setWriteFirmwarePointer
+     * @param pointer
+     * @param returnCallback
+     * @param errorCallback
+     */
+    setWriteFirmwarePointer(pointer: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * writeFirmware
+     * @param data
+     * @param returnCallback
+     * @param errorCallback
+     */
+    writeFirmware(data: any, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * setStatusLEDConfig
+     * @param config
+     * @param returnCallback
+     * @param errorCallback
+     */
+    setStatusLEDConfig(config: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * getStatusLEDConfig
+     * @param returnCallback
+     * @param errorCallback
+     */
+    getStatusLEDConfig(returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * getChipTemperature
+     * @param returnCallback
+     * @param errorCallback
+     */
+    getChipTemperature(returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * reset
+     * @param returnCallback
+     * @param errorCallback
+     */
+    reset(returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * writeUID
+     * @param uid
+     * @param returnCallback
+     * @param errorCallback
+     */
+    writeUID(uid: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * readUID
+     * @param returnCallback
+     * @param errorCallback
+     */
+    readUID(returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * getIdentity
+     * @param returnCallback
+     * @param errorCallback
+     */
+    getIdentity(returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
      * write
      * @param message
      * @param returnCallback
