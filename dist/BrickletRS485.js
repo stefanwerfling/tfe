@@ -1302,6 +1302,152 @@ export class BrickletRS485 extends Device {
          */
         this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_GET_IDENTITY, [], '', 33, 's8 s8 c B3 B3 H', returnCallback, errorCallback, false, false);
     }
+    _responseHandlerWrite(device, fid, packetResponse, sendRequestParams, returnCallback, errorCallback) {
+        const result = [];
+        let payload = null;
+        let llvalues = null;
+        let packetErrorFlag = 0;
+        let shortWriteWritten = -1;
+        const streamStateObjectI = device.streamStateObjects[fid];
+        const responseEmpty = streamStateObjectI.responseProperties.streamInResponseEmpty;
+        let messageLengthI = 0;
+        let messageChunkDataI = [];
+        let messageChunkOffsetI = 0;
+        const doNextLLCall = () => {
+            messageLengthI = streamStateObjectI.responseProperties.data.length;
+            messageChunkDataI =
+                device.ipcon.createChunkData(streamStateObjectI.responseProperties.data, streamStateObjectI.responseProperties.streamInChunkOffset, streamStateObjectI.responseProperties.streamInChunkLength, '\0');
+            messageChunkOffsetI = streamStateObjectI.responseProperties.streamInChunkOffset;
+            for (let iI = 0; iI < streamStateObjectI.dataMappingStreamIn.length; iI++) {
+                if (streamStateObjectI.dataMappingStreamIn[iI] === null) {
+                    continue;
+                }
+                if (streamStateObjectI.dataMappingStreamIn[iI].endsWith('Length')) {
+                    streamStateObjectI.responseProperties.streamInLLParams[iI] = messageLengthI;
+                }
+                else if (streamStateObjectI.dataMappingStreamIn[iI].endsWith('Offset')) {
+                    streamStateObjectI.responseProperties.streamInLLParams[iI] = messageChunkOffsetI;
+                }
+                else if (streamStateObjectI.dataMappingStreamIn[iI].endsWith('Data')) {
+                    streamStateObjectI.responseProperties.streamInLLParams[iI] = messageChunkDataI;
+                }
+            }
+            device.ipcon.sendRequest(device, sendRequestParams.sendRequestFID, streamStateObjectI.responseProperties.streamInLLParams, sendRequestParams.sendRequestPackFormat, sendRequestParams.sendRequestExpectedResponseLength, sendRequestParams.sendRequestUnpackFormat, returnCallback, errorCallback, sendRequestParams.startStreamResponseTimer, sendRequestParams.checkValidity);
+            streamStateObjectI.responseProperties.streamInChunkOffset += sendRequestParams.contentSize;
+        };
+        const handleStreamInDone = () => {
+            if (streamStateObjectI.responseProperties.returnCB) {
+                if (streamStateObjectI.streamProperties.shortWrite) {
+                    for (let g = 0; g < streamStateObjectI.dataMapping.length; g++) {
+                        if (streamStateObjectI.dataMapping[g].endsWith('Written')) {
+                            result[g] = streamStateObjectI.responseProperties.streamInWritten;
+                            break;
+                        }
+                    }
+                }
+                if (responseEmpty) {
+                    streamStateObjectI.responseProperties.returnCB.apply(device);
+                }
+                else {
+                    streamStateObjectI.responseProperties.returnCB.apply(device, result);
+                }
+            }
+            device.resetStreamStateObject(streamStateObjectI);
+            if (streamStateObjectI.responseProperties.callQueue.length > 0) {
+                const callQueue = streamStateObjectI.responseProperties.callQueue.shift();
+                if (callQueue) {
+                    callQueue(device);
+                }
+            }
+        };
+        if (!streamStateObjectI) {
+            return;
+        }
+        packetErrorFlag = device.ipcon.getEFromPacket(packetResponse);
+        if (packetErrorFlag !== 0) {
+            if (streamStateObjectI.responseProperties.errorCB !== undefined) {
+                if (packetErrorFlag === 1) {
+                    streamStateObjectI.responseProperties.errorCB.call(device, IPConnection.ERROR_INVALID_PARAMETER);
+                }
+                else if (packetErrorFlag === 2) {
+                    streamStateObjectI.responseProperties.errorCB.call(device, IPConnection.ERROR_FUNCTION_NOT_SUPPORTED);
+                }
+                else {
+                    streamStateObjectI.responseProperties.errorCB.call(device, IPConnection.ERROR_UNKNOWN_ERROR);
+                }
+            }
+            device.resetStreamStateObject(streamStateObjectI);
+            if (streamStateObjectI.responseProperties.callQueue.length > 0) {
+                const callQueueC = streamStateObjectI.responseProperties.callQueue.shift();
+                if (callQueueC) {
+                    callQueueC(device);
+                }
+            }
+            return;
+        }
+        if (responseEmpty) {
+            if (streamStateObjectI.streamProperties.singleChunk) {
+                handleStreamInDone();
+                return;
+            }
+            if (streamStateObjectI.responseProperties.streamInChunkOffset < streamStateObjectI.responseProperties.data.length) {
+                doNextLLCall();
+            }
+            else {
+                handleStreamInDone();
+            }
+        }
+        else {
+            payload = device.ipcon.getPayloadFromPacket(packetResponse);
+            llvalues = device.ipcon.unpack(payload, streamStateObjectI.responseProperties.unpackFormatString);
+            if (!payload || !llvalues) {
+                device.resetStreamStateObject(streamStateObjectI);
+                if (streamStateObjectI.responseProperties.callQueue.length > 0) {
+                    const callQueueC = streamStateObjectI.responseProperties.callQueue.shift();
+                    if (callQueueC) {
+                        callQueueC(device);
+                    }
+                }
+                return;
+            }
+            for (let i = 0; i < streamStateObjectI.dataMapping.length; i++) {
+                result.push(llvalues[i]);
+            }
+            if (streamStateObjectI.streamProperties.singleChunk) {
+                if (streamStateObjectI.responseProperties.returnCB) {
+                    streamStateObjectI.responseProperties.returnCB.apply(device, result);
+                }
+                device.resetStreamStateObject(streamStateObjectI);
+                if (streamStateObjectI.responseProperties.callQueue.length > 0) {
+                    const callQueueC = streamStateObjectI.responseProperties.callQueue.shift();
+                    if (callQueueC) {
+                        callQueueC(device);
+                    }
+                }
+                return;
+            }
+            if (streamStateObjectI.streamProperties.shortWrite) {
+                for (let i = 0; i < streamStateObjectI.dataMapping.length; i++) {
+                    if (streamStateObjectI.dataMapping[i].endsWith('Written')) {
+                        shortWriteWritten = llvalues[i];
+                        streamStateObjectI.responseProperties.streamInWritten += shortWriteWritten;
+                        break;
+                    }
+                }
+                if ((shortWriteWritten !== -1) && (shortWriteWritten < sendRequestParams.contentSize)) {
+                    // Either last chunk or short write
+                    handleStreamInDone();
+                    return;
+                }
+            }
+            if (streamStateObjectI.responseProperties.streamInChunkOffset < streamStateObjectI.responseProperties.data.length) {
+                doNextLLCall();
+            }
+            else {
+                handleStreamInDone();
+            }
+        }
+    }
     /**
      * write
      * @param message
@@ -1324,169 +1470,25 @@ export class BrickletRS485 extends Device {
             if (errorCallback) {
                 errorCallback(IPConnection.ERROR_INVALID_PARAMETER);
             }
-            this.resetStreamStateObject(streamStateObject);
-            if (streamStateObject.responseProperties.callQueue.length > 0) {
-                const callQueueC = streamStateObject.responseProperties.callQueue.shift();
-                if (callQueueC) {
-                    callQueueC(this);
-                }
-            }
             return;
         }
         if (this.getResponseExpected(1)) {
-            let functionToQueue = null;
             if (streamStateObject.responseProperties.responseHandler === null) {
                 const responseHandler = (device, fid, packetResponse) => {
-                    let i;
-                    const result = [];
-                    let payload = null;
-                    let llvalues = null;
-                    let packetErrorFlag = 0;
-                    let shortWriteWritten = -1;
-                    const streamStateObjectI = device.streamStateObjects[fid];
-                    const responseEmpty = streamStateObjectI.responseProperties.streamInResponseEmpty;
-                    let messageLengthI = 0;
-                    let messageChunkDataI = [];
-                    let messageChunkOffsetI = 0;
-                    const doNextLLCall = () => {
-                        messageLengthI = streamStateObjectI.responseProperties.data.length;
-                        messageChunkDataI =
-                            device.ipcon.createChunkData(streamStateObjectI.responseProperties.data, streamStateObjectI.responseProperties.streamInChunkOffset, streamStateObjectI.responseProperties.streamInChunkLength, '\0');
-                        messageChunkOffsetI = streamStateObjectI.responseProperties.streamInChunkOffset;
-                        for (let iI = 0; iI < streamStateObjectI.dataMappingStreamIn.length; iI++) {
-                            if (streamStateObjectI.dataMappingStreamIn[iI] === null) {
-                                continue;
-                            }
-                            if (streamStateObjectI.dataMappingStreamIn[iI].endsWith('Length')) {
-                                streamStateObjectI.responseProperties.streamInLLParams[iI] = messageLengthI;
-                            }
-                            else if (streamStateObjectI.dataMappingStreamIn[iI].endsWith('Offset')) {
-                                streamStateObjectI.responseProperties.streamInLLParams[iI] = messageChunkOffsetI;
-                            }
-                            else if (streamStateObjectI.dataMappingStreamIn[iI].endsWith('Data')) {
-                                streamStateObjectI.responseProperties.streamInLLParams[iI] = messageChunkDataI;
-                            }
-                        }
-                        device.ipcon.sendRequest(device, BrickletRS485.FUNCTION_WRITE_LOW_LEVEL, streamStateObjectI.responseProperties.streamInLLParams, 'H H c60', 9, 'B', returnCallback, errorCallback, true, true);
-                        streamStateObjectI.responseProperties.streamInChunkOffset += 60;
-                    };
-                    const handleStreamInDone = () => {
-                        if (streamStateObjectI.responseProperties.returnCB) {
-                            if (streamStateObjectI.streamProperties.shortWrite) {
-                                for (let g = 0; g < streamStateObjectI.dataMapping.length; g++) {
-                                    if (streamStateObjectI.dataMapping[g].endsWith('Written')) {
-                                        result[g] = streamStateObjectI.responseProperties.streamInWritten;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (responseEmpty) {
-                                streamStateObjectI.responseProperties.returnCB.apply(device);
-                            }
-                            else {
-                                streamStateObjectI.responseProperties.returnCB.apply(device, result);
-                            }
-                        }
-                        device.resetStreamStateObject(streamStateObjectI);
-                        if (streamStateObjectI.responseProperties.callQueue.length > 0) {
-                            const callQueue = streamStateObjectI.responseProperties.callQueue.shift();
-                            if (callQueue) {
-                                callQueue(device);
-                            }
-                        }
-                    };
-                    if (!streamStateObjectI) {
-                        return;
-                    }
-                    packetErrorFlag = device.ipcon.getEFromPacket(packetResponse);
-                    if (packetErrorFlag !== 0) {
-                        if (streamStateObjectI.responseProperties.errorCB !== undefined) {
-                            if (packetErrorFlag === 1) {
-                                streamStateObjectI.responseProperties.errorCB.call(device, IPConnection.ERROR_INVALID_PARAMETER);
-                            }
-                            else if (packetErrorFlag === 2) {
-                                streamStateObjectI.responseProperties.errorCB.call(device, IPConnection.ERROR_FUNCTION_NOT_SUPPORTED);
-                            }
-                            else {
-                                streamStateObjectI.responseProperties.errorCB.call(device, IPConnection.ERROR_UNKNOWN_ERROR);
-                            }
-                        }
-                        device.resetStreamStateObject(streamStateObjectI);
-                        if (streamStateObjectI.responseProperties.callQueue.length > 0) {
-                            const callQueueC = streamStateObjectI.responseProperties.callQueue.shift();
-                            if (callQueueC) {
-                                callQueueC(device);
-                            }
-                        }
-                        return;
-                    }
-                    if (responseEmpty) {
-                        if (streamStateObjectI.streamProperties.singleChunk) {
-                            handleStreamInDone();
-                            return;
-                        }
-                        if (streamStateObjectI.responseProperties.streamInChunkOffset < streamStateObjectI.responseProperties.data.length) {
-                            doNextLLCall();
-                        }
-                        else {
-                            handleStreamInDone();
-                        }
-                    }
-                    else {
-                        payload = device.ipcon.getPayloadFromPacket(packetResponse);
-                        llvalues = device.ipcon.unpack(payload, streamStateObjectI.responseProperties.unpackFormatString);
-                        if (!payload || !llvalues) {
-                            device.resetStreamStateObject(streamStateObjectI);
-                            if (streamStateObjectI.responseProperties.callQueue.length > 0) {
-                                const callQueueC = streamStateObjectI.responseProperties.callQueue.shift();
-                                if (callQueueC) {
-                                    callQueueC(device);
-                                }
-                            }
-                            return;
-                        }
-                        for (i = 0; i < streamStateObjectI.dataMapping.length; i++) {
-                            result.push(llvalues[i]);
-                        }
-                        if (streamStateObjectI.streamProperties.singleChunk) {
-                            if (streamStateObjectI.responseProperties.returnCB) {
-                                streamStateObjectI.responseProperties.returnCB.apply(device, result);
-                            }
-                            device.resetStreamStateObject(streamStateObjectI);
-                            if (streamStateObjectI.responseProperties.callQueue.length > 0) {
-                                const callQueueC = streamStateObjectI.responseProperties.callQueue.shift();
-                                if (callQueueC) {
-                                    callQueueC(device);
-                                }
-                            }
-                            return;
-                        }
-                        if (streamStateObjectI.streamProperties.shortWrite) {
-                            for (i = 0; i < streamStateObjectI.dataMapping.length; i++) {
-                                if (streamStateObjectI.dataMapping[i].endsWith('Written')) {
-                                    shortWriteWritten = llvalues[i];
-                                    streamStateObjectI.responseProperties.streamInWritten += shortWriteWritten;
-                                    break;
-                                }
-                            }
-                            if ((shortWriteWritten !== -1) && (shortWriteWritten < 60)) {
-                                // Either last chunk or short write
-                                handleStreamInDone();
-                                return;
-                            }
-                        }
-                        if (streamStateObjectI.responseProperties.streamInChunkOffset < streamStateObjectI.responseProperties.data.length) {
-                            doNextLLCall();
-                        }
-                        else {
-                            handleStreamInDone();
-                        }
-                    }
+                    this._responseHandlerWrite(device, fid, packetResponse, {
+                        contentSize: 60,
+                        sendRequestFID: BrickletRS485.FUNCTION_WRITE_LOW_LEVEL,
+                        sendRequestPackFormat: 'H H c60',
+                        sendRequestExpectedResponseLength: 9,
+                        sendRequestUnpackFormat: 'B',
+                        startStreamResponseTimer: true,
+                        checkValidity: true
+                    }, returnCallback, errorCallback);
                 };
                 streamStateObject.responseProperties.responseHandler = responseHandler;
             }
             if (streamStateObject.responseProperties.running) {
-                functionToQueue = (device) => {
+                const functionToQueue = (device) => {
                     if (device instanceof BrickletRS485) {
                         device.write(message, returnCallback, errorCallback);
                     }
@@ -1555,7 +1557,6 @@ export class BrickletRS485 extends Device {
          * See :func:`Enable Read Callback` and :cb:`Read` callback.
          */
         let responseHandler = null;
-        let functionToQueue = null;
         const streamStateObject = this.streamStateObjects[2];
         if (streamStateObject.responseProperties.responseHandler === null) {
             responseHandler = (device, fid, packetResponse) => {
@@ -1695,7 +1696,7 @@ export class BrickletRS485 extends Device {
             streamStateObject.responseProperties.responseHandler = responseHandler;
         }
         if (streamStateObject.responseProperties.running) {
-            functionToQueue = (device) => {
+            const functionToQueue = (device) => {
                 if (device instanceof BrickletRS485) {
                     device.read(length, returnCallback, errorCallback);
                 }
@@ -1707,6 +1708,192 @@ export class BrickletRS485 extends Device {
             streamStateObject.responseProperties.returnCB = returnCallback;
             streamStateObject.responseProperties.errorCB = errorCallback;
             this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_READ_LOW_LEVEL, [length], 'H', 72, 'H H c60', returnCallback, errorCallback, true, true);
+        }
+    }
+    /**
+     * modbusSlaveAnswerReadCoilsRequest
+     * @param requestID
+     * @param coils
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerReadCoilsRequest(requestID, coils, returnCallback, errorCallback) {
+        let coilsLength = 0;
+        let coilsChunkData = [];
+        let coilsChunkOffset = 0;
+        const streamStateObject = this.streamStateObjects[25];
+        if (coils.length > 65535) {
+            if (errorCallback) {
+                errorCallback(IPConnection.ERROR_INVALID_PARAMETER);
+            }
+            return;
+        }
+        if (this.getResponseExpected(25)) {
+            if (streamStateObject.responseProperties.responseHandler === null) {
+                const responseHandler = (device, fid, packetResponse) => {
+                    this._responseHandlerWrite(device, fid, packetResponse, {
+                        contentSize: 472,
+                        sendRequestFID: BrickletRS485.FUNCTION_MODBUS_SLAVE_ANSWER_READ_COILS_REQUEST_LOW_LEVEL,
+                        sendRequestPackFormat: 'B H H ?472',
+                        sendRequestExpectedResponseLength: 0,
+                        sendRequestUnpackFormat: '',
+                        startStreamResponseTimer: true,
+                        checkValidity: true
+                    }, returnCallback, errorCallback);
+                };
+                streamStateObject.responseProperties.responseHandler = responseHandler;
+            }
+            if (streamStateObject.responseProperties.running) {
+                const functionToQueue = (device) => {
+                    if (device instanceof BrickletRS485) {
+                        device.modbusSlaveAnswerReadCoilsRequest(requestID, coils, returnCallback, errorCallback);
+                    }
+                };
+                streamStateObject.responseProperties.callQueue.push(functionToQueue);
+            }
+            else {
+                streamStateObject.responseProperties.running = true;
+                streamStateObject.responseProperties.returnCB = returnCallback;
+                streamStateObject.responseProperties.errorCB = errorCallback;
+                streamStateObject.responseProperties.data.length = 0;
+                streamStateObject.responseProperties.data.push(streamStateObject.responseProperties.data, coils);
+                if (streamStateObject.streamProperties.fixedLength) {
+                    coilsLength = streamStateObject.streamProperties.fixedLength;
+                }
+                else {
+                    coilsLength = coils.length;
+                }
+                coilsChunkOffset = 0;
+                coilsChunkData =
+                    this.ipcon.createChunkData(coils, 0, 472, '\0');
+                streamStateObject.responseProperties.streamInChunkOffset = 472;
+                streamStateObject.responseProperties.streamInChunkLength = 472;
+                streamStateObject.responseProperties.streamInLLParams = [requestID, coilsLength, coilsChunkOffset, coilsChunkData];
+                this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_SLAVE_ANSWER_READ_COILS_REQUEST_LOW_LEVEL, [requestID, coilsLength, coilsChunkOffset, coilsChunkData], 'B H H ?472', 0, '', returnCallback, errorCallback, true, true);
+            }
+        }
+        else {
+            if (streamStateObject.streamProperties.fixedLength) {
+                coilsLength = streamStateObject.streamProperties.fixedLength;
+            }
+            else {
+                coilsLength = coils.length;
+            }
+            if (streamStateObject.streamProperties.singleChunk) {
+                coilsChunkData =
+                    this.ipcon.createChunkData(coils, 0, 472, '\0');
+                this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_SLAVE_ANSWER_READ_COILS_REQUEST_LOW_LEVEL, [requestID, coilsLength, coilsChunkOffset, coilsChunkData], 'B H H ?472', 0, '', returnCallback, errorCallback, false, true);
+            }
+            else {
+                while (coilsChunkOffset < coils.length) {
+                    coilsChunkData =
+                        this.ipcon.createChunkData(coils, coilsChunkOffset, 472, '\0');
+                    this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_SLAVE_ANSWER_READ_COILS_REQUEST_LOW_LEVEL, [requestID, coilsLength, coilsChunkOffset, coilsChunkData], 'B H H ?472', 0, '', returnCallback, errorCallback, false, true);
+                    coilsChunkOffset += 472;
+                }
+            }
+            if (returnCallback) {
+                returnCallback();
+            }
+        }
+    }
+    /**
+     * modbusSlaveAnswerReadHoldingRegistersRequest
+     * @param requestID
+     * @param holdingRegisters
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerReadHoldingRegistersRequest(requestID, holdingRegisters, returnCallback, errorCallback) {
+        /**
+         * In Modbus slave mode this function can be used to answer a master request to
+         * read holding registers.
+         *
+         * * Request ID: Request ID of the corresponding request that is being answered.
+         * * Holding Registers: Data that is to be sent to the Modbus master for the corresponding request.
+         *
+         * This function must be called from the :cb:`Modbus Slave Read Holding Registers Request`
+         * callback with the Request ID as provided by the argument of the callback.
+         */
+        let holdingRegistersLength = 0;
+        let holdingRegistersChunkData = [];
+        let holdingRegistersChunkOffset = 0;
+        const streamStateObject = this.streamStateObjects[27];
+        if (holdingRegisters.length > 65535) {
+            if (errorCallback) {
+                errorCallback(IPConnection.ERROR_INVALID_PARAMETER);
+            }
+            return;
+        }
+        if (this.getResponseExpected(27)) {
+            let responseHandler = null;
+            let functionToQueue = null;
+            if (streamStateObject.responseProperties.responseHandler === null) {
+                responseHandler = (device, fid, packetResponse) => {
+                    this._responseHandlerWrite(device, fid, packetResponse, {
+                        contentSize: 29,
+                        sendRequestFID: BrickletRS485.FUNCTION_MODBUS_SLAVE_ANSWER_READ_HOLDING_REGISTERS_REQUEST_LOW_LEVEL,
+                        sendRequestPackFormat: 'B H H H29',
+                        sendRequestExpectedResponseLength: 0,
+                        sendRequestUnpackFormat: '',
+                        startStreamResponseTimer: true,
+                        checkValidity: true
+                    }, returnCallback, errorCallback);
+                };
+                streamStateObject.responseProperties.responseHandler = responseHandler;
+            }
+            if (streamStateObject.responseProperties.running) {
+                functionToQueue = (device) => {
+                    if (device instanceof BrickletRS485) {
+                        device.modbusSlaveAnswerReadHoldingRegistersRequest(requestID, holdingRegisters, returnCallback, errorCallback);
+                    }
+                };
+                streamStateObject.responseProperties.callQueue.push(functionToQueue);
+            }
+            else {
+                streamStateObject.responseProperties.running = true;
+                streamStateObject.responseProperties.returnCB = returnCallback;
+                streamStateObject.responseProperties.errorCB = errorCallback;
+                streamStateObject.responseProperties.data.length = 0;
+                streamStateObject.responseProperties.data.push(holdingRegisters);
+                if (streamStateObject.streamProperties.fixedLength) {
+                    holdingRegistersLength = streamStateObject.streamProperties.fixedLength;
+                }
+                else {
+                    holdingRegistersLength = holdingRegisters.length;
+                }
+                holdingRegistersChunkOffset = 0;
+                holdingRegistersChunkData =
+                    this.ipcon.createChunkData(holdingRegisters, 0, 29, '\0');
+                streamStateObject.responseProperties.streamInChunkOffset = 29;
+                streamStateObject.responseProperties.streamInChunkLength = 29;
+                streamStateObject.responseProperties.streamInLLParams = [requestID, holdingRegistersLength, holdingRegistersChunkOffset, holdingRegistersChunkData];
+                this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_SLAVE_ANSWER_READ_HOLDING_REGISTERS_REQUEST_LOW_LEVEL, [requestID, holdingRegistersLength, holdingRegistersChunkOffset, holdingRegistersChunkData], 'B H H H29', 0, '', returnCallback, errorCallback, true, true);
+            }
+        }
+        else {
+            if (streamStateObject.streamProperties.fixedLength) {
+                holdingRegistersLength = streamStateObject.streamProperties.fixedLength;
+            }
+            else {
+                holdingRegistersLength = holdingRegisters.length;
+            }
+            if (streamStateObject.streamProperties.singleChunk) {
+                holdingRegistersChunkData =
+                    this.ipcon.createChunkData(holdingRegisters, 0, 29, '\0');
+                this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_SLAVE_ANSWER_READ_HOLDING_REGISTERS_REQUEST_LOW_LEVEL, [requestID, holdingRegistersLength, holdingRegistersChunkOffset, holdingRegistersChunkData], 'B H H H29', 0, '', returnCallback, errorCallback, false, true);
+            }
+            else {
+                while (holdingRegistersChunkOffset < holdingRegisters.length) {
+                    holdingRegistersChunkData =
+                        this.ipcon.createChunkData(holdingRegisters, holdingRegistersChunkOffset, 29, '\0');
+                    this.ipcon.sendRequest(this, BrickletRS485.FUNCTION_MODBUS_SLAVE_ANSWER_READ_HOLDING_REGISTERS_REQUEST_LOW_LEVEL, [requestID, holdingRegistersLength, holdingRegistersChunkOffset, holdingRegistersChunkData], 'B H H H29', 0, '', returnCallback, errorCallback, false, true);
+                    holdingRegistersChunkOffset += 29;
+                }
+            }
+            if (returnCallback) {
+                returnCallback();
+            }
         }
     }
 }

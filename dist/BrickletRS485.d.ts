@@ -1,3 +1,4 @@
+/// <reference types="node" resolution-mode="require"/>
 import { Device, TFAnyFunction, TFErrorCallback } from './Device.js';
 import { IPConnection } from './IPConnection.js';
 /**
@@ -516,6 +517,15 @@ export declare class BrickletRS485 extends Device {
      * @param errorCallback
      */
     getIdentity(returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    protected _responseHandlerWrite(device: Device, fid: number, packetResponse: Buffer, sendRequestParams: {
+        contentSize: number;
+        sendRequestFID: number;
+        sendRequestPackFormat: string;
+        sendRequestExpectedResponseLength: number;
+        sendRequestUnpackFormat: string;
+        startStreamResponseTimer: boolean;
+        checkValidity: boolean;
+    }, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
     /**
      * write
      * @param message
@@ -530,4 +540,20 @@ export declare class BrickletRS485 extends Device {
      * @param errorCallback
      */
     read(length: number, returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * modbusSlaveAnswerReadCoilsRequest
+     * @param requestID
+     * @param coils
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerReadCoilsRequest(requestID: number, coils: string[], returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
+    /**
+     * modbusSlaveAnswerReadHoldingRegistersRequest
+     * @param requestID
+     * @param holdingRegisters
+     * @param returnCallback
+     * @param errorCallback
+     */
+    modbusSlaveAnswerReadHoldingRegistersRequest(requestID: number, holdingRegisters: string[], returnCallback?: TFAnyFunction, errorCallback?: TFErrorCallback): void;
 }
